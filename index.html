@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>A Simple Tic-Tac-Toe Game-</title>
+        <link rel="stylesheet" href="main.css">
+    </head>
+    <body>
+        <header>
+            Tic Tac Toe - just the basics
+        </header>
+        <div id="score-board">
+            X's: <span id="xPlayer"></span>
+            <br>
+            O's: <span id="oPlayer"></span>
+        </div>
+        <div id="game-container">
+            <div id="setup-container">
+                <form id="new-game-setup">
+                    <div class="setup-prompts">
+                        <h1>Game Setup</h1>
+                        <p>X goes first</p>
+                    </div>
+                    <div class="player-input">
+                        X's: <input type="text" name="xPlayerName" placeholder="player name" >
+                        <br>
+                        O's: <input type="text" name="oPlayerName" placeholder="player name" >
+                    </div>
+                    <input type="submit" id="start-game-btn" value="Start game">
+                </form>
+                <div id="next-game-choice">
+                    <h1>Rematch or New Game</h1>
+                    <button id="game-setup-btn">New game</button>
+                    <button id="rematch-btn">Rematch</button>
+                </div>
+            </div>
+            <button id="square1" class="square"></button>
+            <button id="square2" class="square"></button>
+            <button id="square3" class="square"></button>
+            <button id="square4" class="square"></button>
+            <button id="square5" class="square"></button>
+            <button id="square6" class="square"></button>
+            <button id="square7" class="square"></button>
+            <button id="square8" class="square"></button>
+            <button id="square9" class="square"></button>
+        </div>
+        <div class="gameplay-prompts"></div>
+    </body>
+    <script src="app.js"></script>
+</html>
