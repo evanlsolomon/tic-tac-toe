@@ -1,8 +1,3 @@
-// bugs that need to be fixed:
-// --the event listeners are not correctly being removed on a rematch, so
-//   a click on a square that was unused in a prior game, will fire multiple events. 
-//   maybe try using onclick for the functions, rather than using event listeners.. ?
-
 let gameInProgress = false;
 
 document.getElementById("start-game-btn")
@@ -35,8 +30,10 @@ const promptTurn = (player = currentPlayer()) => {
      playerPromptElement(player)
      .innerText = `${player.getName()}, it's your turn`};
 
+const squareElements = document.getElementsByClassName('square')
 const clearPrompt = (player = currentPlayer()) => playerPromptElement(player).innerText="";
-            
+
+
 function showGameSetup(event){
     event.preventDefault();
     hideSquares();
@@ -46,56 +43,47 @@ function showGameSetup(event){
 }
 
 function hideSquares(){
-    let squares = document.getElementsByClassName("square");
-    for(square of squares){
+    for(square of squareElements){
         square.style.display = "none";
         square.innerText = "";
     }
 }
 
 function rematchOrNewGame(){
+    clearBoardListeners();
     hideSquares();
     clearGame();
-    clearBoardListeners();
     document.getElementById("setup-container").style.display = "flex";
     document.getElementById("new-game-setup").style.display = "none";
     document.getElementById("next-game-choice").style.display = "block";
     document.getElementById("game-setup-btn")
         .addEventListener("click", event => showGameSetup(event) );    
     document.getElementById("rematch-btn")
-        .addEventListener("click", event => rematch(event) );
-        
+        .addEventListener("click", event => rematch(event) );        
 }
-
-
 
 const placeBoxes = () => {
     document.getElementById("setup-container").style.display = "none";
-    let squares = document.getElementsByClassName("square");
-    for(square of squares){
+    for(square of squareElements){
         square.style.display = "block";
         square.innerText = "";
     }
 }
 
 const clearBoardListeners = () => {
-    let squares = [...document.getElementsByClassName('square')];
-    for (square of squares){
-        square.removeEventListener("click", event => executePlayerTurn(event) );
+    for (square of squareElements){
+        square.removeEventListener("click", executePlayerTurn);
     } 
 }
-
 
 //add event listeners to squares
 const loadBoardListeners = () => {
-    let squares = [...document.getElementsByClassName('square')];
-    for (square of squares){
+    for (square of squareElements){
         if (square.innerText === ""){
-            square.addEventListener("click", event => executePlayerTurn(event),{once: true});
+            square.addEventListener("click", executePlayerTurn,{once: true});
         }
     } 
 }
-
 
 
 // Player factory 
@@ -145,7 +133,7 @@ const executePlayerTurn = (event) => {
     event.target.innerText = team; 
     clearPrompt();
     playCount++;
-    console.log(`playcount: ${playCount}, board: `, board);
+    // console.log(`playcount: ${playCount}, board: `, board);
     promptTurn();
     if (hasWinner()) {
         gameInProgress = false;
@@ -202,10 +190,3 @@ const hasWinner = () => {
     }
     return false;
 }
-
-
-// alternate between peoples' turns
-// squares can be clicked, depending on whose turn it is, decides what fills in the squar
-// after each turn, run gameCheck to see if there are any winners
-// once there is a winner, prompt user to restart the game or set new players
-// keep a tally of players' wins
