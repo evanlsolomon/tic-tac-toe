@@ -1,6 +1,7 @@
 body{
     min-height: calc(100vh - 50px);
     margin: 25px;
+    background: linear-gradient(to right, #efefbb, #d4d3dd);
 }
 header {
     display: flex;
@@ -11,6 +12,7 @@ header {
 
 #score-board{
     font-size: 26px;
+    display: none;
 }
 
 #game-container {
@@ -18,7 +20,7 @@ header {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
     grid-gap: 1px;
-    height: calc(100vw - 60px);
+    max-height: calc(100vw - 60px);
     max-width: calc(100vh - 150px);
 }
 
@@ -58,6 +60,11 @@ header {
 #setup-container input{
     font-size: inherit;
 }
+
+#new-game-setup {
+    display: block;
+}
+
 
 
 

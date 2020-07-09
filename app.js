@@ -1,73 +1,71 @@
-let gameInProgress = false;
+// Improvements to be made:
+// Gameplay / Logic:
+// Change X's and O's to always show player name
+// Keep score of wins?
+// Upon win, insert congratulatory message
+
+// Style:
+// Move entire board into the center of the window
 
 document.getElementById("start-game-btn")
         .addEventListener("click", event => runGame(event) );
 
 function rematch(event){
     event.preventDefault();
-    gameInProgress = true;
-    DISPLAY.placeBoxes();
     GAME.clearGame();
-    PLAY.playCount = 0;
-    DISPLAY.loadBoardListeners();
-    DISPLAY.promptTurn();
+    DISPLAY.startGame();
+    
 }
 
 function runGame(event){
     event.preventDefault();
-    gameInProgress = true;
-    DISPLAY.placeBoxes();
     PLAY.createPlayers(); 
-    PLAY.playCount = 0;
-    DISPLAY.loadBoardListeners();
-    DISPLAY.promptTurn();
+    DISPLAY.startGame();
 }
 
 const DISPLAY = (() => {
     
-    const playerPromptElement = (player) => document.getElementById(`${player.getTeam()}Player`);
-    
     const promptTurn = (player = PLAY.currentPlayer()) => {
-         playerPromptElement(player)
-         .innerText = `${player.getName()}, it's your turn`};
-    
-    const squareElements = document.getElementsByClassName('square')
+        playerPromptElement(player)
+        .innerText = `${player.getName()}, it's your turn`};
+        
+    const playerPromptElement = (player) => document.getElementById(`${player.getTeam()}Player`);
+    const squareElements = document.getElementsByClassName('square') 
     const clearPrompt = (player = PLAY.currentPlayer()) => playerPromptElement(player).innerText="";
-    
-    
-    function showGameSetup(event){
-        event.preventDefault();
-        hideSquares();
-        document.getElementById("setup-container").style.display = "flex";
-        document.getElementById("new-game-setup").style.display = "block";
-        document.getElementById("next-game-choice").style.display = "none";
-    }
-    
-    function hideSquares(){
-        for(square of squareElements){
-            square.style.display = "none";
-            square.innerText = "";
-        }
-    }
-    
-    function rematchOrNewGame(){
+    const scoreBoardDisplay = (status) => document.getElementById("score-board").style.display = status;
+    const newPlayersInputDisplay = (status) => document.getElementById("new-game-setup").style.display = status;
+    const gameSetupDisplay = (status) => document.getElementById("setup-container").style.display = status;
+    const nextGameChoiceDisplay = (status, message = "") => {
+        document.getElementById("next-game-choice").style.display = status;
+        document.getElementById("congrat-message").innerText = message;
+    };
+    const rematchOrNewGame = (congratMessage) => {
         clearBoardListeners();
         hideSquares();
         GAME.clearGame();
-        document.getElementById("setup-container").style.display = "flex";
-        document.getElementById("new-game-setup").style.display = "none";
-        document.getElementById("next-game-choice").style.display = "block";
-        document.getElementById("game-setup-btn")
-            .addEventListener("click", event => showGameSetup(event) );    
-        document.getElementById("rematch-btn")
-            .addEventListener("click", event => rematch(event) );        
+        scoreBoardDisplay("none");
+        gameSetupDisplay("flex");
+        nextGameChoiceDisplay("block", congratMessage);
+        document.getElementById("game-setup-btn").addEventListener(
+            "click", event => showGameSetup(event) );    
+        document.getElementById("rematch-btn").addEventListener(
+            "click", event => rematch(event) );        
     }
-    
+
+    const startGame = () => {
+        gameSetupDisplay("none");
+        placeBoxes();
+        loadBoardListeners();
+        scoreBoardDisplay("block");
+        newPlayersInputDisplay("none");
+        promptTurn();
+    }
+     
     const placeBoxes = () => {
-        document.getElementById("setup-container").style.display = "none";
         for(square of squareElements){
             square.style.display = "block";
             square.innerText = "";
+            square.style.paddingBottom = "100%";
         }
     }
     
@@ -76,9 +74,29 @@ const DISPLAY = (() => {
             square.removeEventListener("click", PLAY.executePlayerTurn);
         } 
     }
+
+    const markSquare = (event, team) => {
+        console.log(event.target)
+        event.target.innerText = team.toUpperCase();
+        event.target.style.paddingBottom = 0;
+    }
+
+    function hideSquares(){
+        for(square of squareElements){
+            square.style.display = "none";
+            square.innerText = "";
+        }
+    }
+
     
+    function showGameSetup(event){
+        event.preventDefault();
+        newPlayersInputDisplay("block");
+        nextGameChoiceDisplay("none");
+    }
+
     //add event listeners to squares
-    const loadBoardListeners = () => {
+    function loadBoardListeners () {
         for (square of squareElements){
             if (square.innerText === ""){
                 square.addEventListener("click", PLAY.executePlayerTurn,{once: true});
@@ -86,7 +104,7 @@ const DISPLAY = (() => {
         } 
     }
 
-    return {loadBoardListeners, promptTurn, clearPrompt, placeBoxes, rematchOrNewGame}
+    return {promptTurn, clearPrompt, rematchOrNewGame, markSquare, startGame}
 })();
 
 
@@ -106,19 +124,17 @@ const Player = (name, team) => {
 const PLAY = (() => {
 
     let playCount = 0;
-    const PLAYERS = [];
+    let PLAYERS = [];
     const currentPlayer = () => {
         return PLAYERS[playCount%2]
     };
     
+    //create two players and put them in 
     const createPlayers = () => {
-        //create two players and put them in 
-        const playerInputForm = document.getElementById("new-game-setup");
+        let playerInputForm = document.getElementById("new-game-setup");
         let xPlayer = playerInputForm["xPlayerName"].value;
         let oPlayer = playerInputForm["oPlayerName"].value;
-        PLAYERS.push(Player(xPlayer,"x"));
-        PLAYERS.push(Player(oPlayer,"o"));
-        // try PLAYERS = [Player(xPlayer, "x", oPlayer,"o")];
+        PLAYERS = [Player(xPlayer, "x"), Player(oPlayer,"o")];
     }
     
     const executePlayerTurn = (event) => {
@@ -126,23 +142,25 @@ const PLAY = (() => {
         let team = player.getTeam();
         let squareId = Number(event.target.id.charAt(6));
         GAME.fillBoardSquare(squareId, team) 
-        event.target.innerText = team; 
+        DISPLAY.markSquare(event, team);
         DISPLAY.clearPrompt();
         playCount++;
-        // console.log(`playcount: ${playCount}, board: `, board);
+        // console.log(`playcount: ${playCount}, board: `, GAME.board);
         DISPLAY.promptTurn();
         if (GAME.hasWinner()) {
             gameInProgress = false;
             console.log(player.getName(), player.getTeam(), "has won the game")
-            DISPLAY.rematchOrNewGame();
+            DISPLAY.rematchOrNewGame(`${player.getName()} - team ${player.getTeam()}'s, has won the game.`);
+            playCount = 0;
         }else if (playCount === 9){
             gameInProgress = false;
             console.log("No winner --- it's a tie.")
-            DISPLAY.rematchOrNewGame();
+            DISPLAY.rematchOrNewGame("No winner --- it's a tie.");
+            playCount = 0;
         }
     }
 
-    return {executePlayerTurn, createPlayers, currentPlayer, playCount}
+    return {executePlayerTurn, createPlayers, currentPlayer, playCount, PLAYERS}
 })();
 
 
@@ -160,7 +178,6 @@ const GAME = (() => {
     
     const clearGame = () => {
         DISPLAY.clearPrompt();
-        playCount = 0;
         for(square in board) {
             board[square] = undefined;
         }
@@ -196,7 +213,7 @@ const GAME = (() => {
             }
         }
         if(board[diagonalStart2] !== undefined){
-            if(board[diagonalStart2] === (board[diagonalStart2+2] && board[diagonalStart2] ===  board[diagonalStart2+4]) ){
+            if(board[diagonalStart2] === board[diagonalStart2+2] && board[diagonalStart2] ===  board[diagonalStart2+4] ){
                 return true;
             }
         }
